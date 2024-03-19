@@ -11,9 +11,11 @@ def decompress_rar(rar_file):
 
 # Function to save uploaded file
 def save_uploadedfile(uploadedfile):
+    os.makedirs("tempDir", exist_ok=True)  # Ensure tempDir exists or create it
     with open(os.path.join("tempDir", uploadedfile.name), "wb") as f:
         f.write(uploadedfile.getbuffer())
     return st.success("Saved File: {} to tempDir".format(uploadedfile.name))
+
 
 # Function to list and download files from tempDir
 def download_file(file_path):
