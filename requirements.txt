@@ -2,4 +2,3 @@ streamlit
 rarfile
 pyunpack
 patool
-unrar
