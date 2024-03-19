@@ -3,9 +3,9 @@ from pyunpack import Archive
 import tempfile
 import os
 
-def decompress_rar(rar_file, destination_path):
+def decompress_rar(rar_file_path, destination_path):
     try:
-        Archive(rar_file).extractall(destination_path)
+        Archive(rar_file_path).extractall(destination_path)
         return True
     except Exception as e:
         st.error(f"Error occurred: {e}")
@@ -19,12 +19,17 @@ def main():
 
     if uploaded_file:
         # Create a temporary directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            if decompress_rar(uploaded_file, temp_dir):
-                st.success("File decompressed successfully!")
-                decompressed_files = os.listdir(temp_dir)
-                for file in decompressed_files:
-                    st.markdown(f"[{file}]({os.path.join(temp_dir, file)})")
+        temp_dir = tempfile.mkdtemp()
+        temp_rar_file = os.path.join(temp_dir, "uploaded_file.rar")
+        with open(temp_rar_file, "wb") as f:
+            f.write(uploaded_file.read())
+        
+        # Decompress the uploaded file
+        if decompress_rar(temp_rar_file, temp_dir):
+            st.success("File decompressed successfully!")
+            decompressed_files = os.listdir(temp_dir)
+            for file in decompressed_files:
+                st.markdown(f"[{file}]({os.path.join(temp_dir, file)})")
 
 if __name__ == "__main__":
     main()
