@@ -1,53 +1,52 @@
 import streamlit as st
 import rarfile
+import zipfile
 import os
+import shutil
+from io import BytesIO
 
-def decompress_rar(uploaded_file, output_dir="output"):
-  """Decompresses the uploaded RAR file and saves the extracted files to the specified directory.
+# This function checks and installs unrar if not present (For local runs, in Streamlit Cloud you need to ensure unrar is available)
+def check_and_install_unrar():
+    if shutil.which("unrar") is None:
+        import subprocess
+        subprocess.run(["apt-get", "install", "unrar"], check=True)
 
-  Args:
-      uploaded_file (streamlit.uploadedfile.UploadedFile): The uploaded RAR file.
-      output_dir (str, optional): The directory to save the extracted files. Defaults to "output".
-  """
-  # Create a temporary directory (if it doesn't exist)
-  os.makedirs(output_dir, exist_ok=True)
+# Check and install unrar at the beginning
+check_and_install_unrar()
 
-  # Get the temporary file path
-  file_path = os.path.join(output_dir, uploaded_file.name)
+# Function to extract files
+def extract_file(file_path, extract_to_dir):
+    if file_path.endswith('.rar'):
+        with rarfile.RarFile(file_path) as opened_rar:
+            opened_rar.extractall(extract_to_dir)
+            st.success(f'{file_path} extracted.')
+    elif file_path.endswith('.zip'):
+        with zipfile.ZipFile(file_path, 'r') as opened_zip:
+            opened_zip.extractall(extract_to_dir)
+            st.success(f'{file_path} extracted.')
 
-  # Write the uploaded file content to the temporary location
-  with open(file_path, "wb") as f:
-    f.write(uploaded_file.getbuffer())
+# Streamlit UI
+st.title('File Decompressor')
 
-  # Now use the temporary file path for decompression
-  with rarfile.open(file_path) as rar:
-    rar.extractall(output_dir)
-  st.success(f"Decompressed {uploaded_file.name} to {output_dir}")
+uploaded_files = st.file_uploader("Choose a RAR or ZIP file", accept_multiple_files=True, type=['rar', 'zip'])
 
-def download_file(file_path):
-  """Creates a download link for a file at the specified path.
+extract_to_dir = 'extracted_files/'
 
-  Args:
-      file_path (str): The path to the file to download.
-  """
-  with open(file_path, "rb") as f:
-    data = f.read()
-  st.download_button(label=os.path.basename(file_path), data=data, file_ext=os.path.splitext(file_path)[1])
+if not os.path.exists(extract_to_dir):
+    os.makedirs(extract_to_dir)
 
-st.title("RAR Decompression and Download App")
-uploaded_file = st.file_uploader("Upload RAR File", type="rar")
+if st.button('Extract Files'):
+    for uploaded_file in uploaded_files:
+        # Save uploaded file to disk
+        with open(os.path.join(extract_to_dir, uploaded_file.name), "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        # Extract files
+        extract_file(os.path.join(extract_to_dir, uploaded_file.name), extract_to_dir)
 
-if uploaded_file is not None:
-  # Decompress the uploaded RAR file
-  decompress_rar(uploaded_file)
-
-  # Get a list of extracted files
-  extracted_files = [os.path.join(output_dir, f) for f in os.listdir(output_dir) if not f.startswith(".")]  # Exclude hidden files
-
-  if extracted_files:
-    st.subheader("Extracted Files")
-    for file_path in extracted_files:
-      st.write(file_path)
-      download_file(file_path)
-  else:
-    st.warning("No files were extracted from the RAR.")
+# List extracted files to download
+extracted_files = os.listdir(extract_to_dir)
+if extracted_files:
+    st.write('Extracted Files:')
+    for file_name in extracted_files:
+        with open(os.path.join(extract_to_dir, file_name), "rb") as f:
+            st.download_button(label=f"Download {file_name}", data=f, file_name=file_name, mime="application/octet-stream")
