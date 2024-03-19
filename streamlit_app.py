@@ -76,7 +76,7 @@ if st.button('Limpar Cache'):
 # List extracted files and directories to download
 extracted_files = os.listdir(extract_to_dir)
 if extracted_files:
-    st.write('Extracted Files and Folders:')
+    st.write('Arquivos e pastas extraídas:')
     for file_name in extracted_files:
         full_path = os.path.join(extract_to_dir, file_name)
         if os.path.isfile(full_path):
