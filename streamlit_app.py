@@ -1,35 +1,53 @@
 import streamlit as st
-import patoolib
 import os
+import shutil
+from rarfile import RarFile
 
-def decompress_rar(rar_file_path, extract_path):
-    try:
-        patoolib.extract_archive(rar_file_path, outdir=extract_path)
-        return True
-    except Exception as e:
-        st.error(f"Error: {e}")
-        return False
+# Function to decompress RAR file
+def decompress_rar(rar_file):
+    with RarFile(rar_file) as rf:
+        rf.extractall("tempDir")
+    return st.success("Decompressed RAR file: {} to tempDir".format(rar_file.name))
+
+# Function to save uploaded file
+def save_uploadedfile(uploadedfile):
+    with open(os.path.join("tempDir", uploadedfile.name), "wb") as f:
+        f.write(uploadedfile.getbuffer())
+    return st.success("Saved File: {} to tempDir".format(uploadedfile.name))
+
+# Function to list and download files from tempDir
+def download_file(file_path):
+    with open(file_path, "rb") as file:
+        file_contents = file.read()
+    return file_contents
 
 def main():
     st.title("RAR File Decompressor")
-    st.write("This app allows you to decompress RAR files and download the extracted files one by one.")
 
-    rar_file = st.file_uploader("Upload a RAR file", type=["rar"])
+    # File upload section
+    rar_file = st.file_uploader("Upload RAR File", type=['rar'])
     if rar_file is not None:
-        extract_path = st.text_input("Extraction Path", value="extracted_files")
-        if st.button("Decompress"):
-            if not os.path.exists(extract_path):
-                os.makedirs(extract_path)
-            if decompress_rar(rar_file, extract_path):
-                st.success("Extraction completed successfully.")
-                files = os.listdir(extract_path)
-                selected_file = st.selectbox("Select a file to download:", files)
-                if st.button("Download Selected File"):
-                    file_path = os.path.join(extract_path, selected_file)
-                    with open(file_path, "rb") as f:
-                        st.download_button(label="Download", data=f, file_name=selected_file)
-            else:
-                st.error("Extraction failed.")
+        file_details = {"FileName": rar_file.name, "FileType": rar_file.type}
+        st.write(file_details)
+        save_uploadedfile(rar_file)
+
+    # Decompress RAR file section
+    if st.button("Decompress RAR File"):
+        if os.path.exists("tempDir"):
+            shutil.rmtree("tempDir")
+        os.makedirs("tempDir", exist_ok=True)
+        decompress_rar(rar_file)
+
+    # Display and download individual files
+    if os.path.exists("tempDir"):
+        st.markdown("### Download Individual Files:")
+        files_list = os.listdir("tempDir")
+        for file in files_list:
+            file_path = os.path.join("tempDir", file)
+            if os.path.isfile(file_path):
+                if st.button(file):
+                    file_contents = download_file(file_path)
+                    st.download_button(label="Download " + file, data=file_contents, file_name=file)
 
 if __name__ == "__main__":
     main()
