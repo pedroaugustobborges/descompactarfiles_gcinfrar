@@ -1,11 +1,12 @@
 import streamlit as st
-from pyunpack import Archive
+import rarfile
 import tempfile
 import os
 
 def decompress_rar(rar_file_path, destination_path):
     try:
-        Archive(rar_file_path).extractall(destination_path)
+        with rarfile.RarFile(rar_file_path) as rf:
+            rf.extractall(destination_path)
         return True
     except Exception as e:
         st.error(f"Error occurred: {e}")
