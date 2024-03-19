@@ -8,7 +8,7 @@ def decompress_rar(rar_file_path, destination_path):
         with rarfile.RarFile(rar_file_path) as rf:
             rf.extractall(destination_path)
         return True
-    except Exception as e:
+    except rarfile.Error as e:
         st.error(f"Error occurred: {e}")
         return False
 
