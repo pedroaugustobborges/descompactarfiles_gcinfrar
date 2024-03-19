@@ -61,7 +61,7 @@ extract_to_dir = 'extracted_files/'
 if not os.path.exists(extract_to_dir):
     os.makedirs(extract_to_dir)
 
-if st.button('Extrair Arquivos'):
+if st.button('Descompactar Arquivo'):
     for uploaded_file in uploaded_files:
         # Save uploaded file to disk
         with open(os.path.join(extract_to_dir, uploaded_file.name), "wb") as f:
