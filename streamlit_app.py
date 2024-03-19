@@ -1,11 +1,12 @@
 import streamlit as st
-import patoolib
+import rarfile
 import os
 import tempfile
 
 def decompress_rar(rar_file_path, destination_path):
     try:
-        patoolib.extract_archive(rar_file_path, outdir=destination_path, program="unrar")
+        with rarfile.RarFile(rar_file_path) as rf:
+            rf.extractall(destination_path)
         return True
     except Exception as e:
         st.error(f"Error occurred: {e}")
@@ -22,7 +23,7 @@ def main():
         temp_rar_file = tempfile.NamedTemporaryFile(delete=False)
         temp_rar_file.write(uploaded_file.read())
         temp_rar_file.close()
-        
+
         # Decompress the uploaded file
         temp_dir = tempfile.mkdtemp()
         if decompress_rar(temp_rar_file.name, temp_dir):
