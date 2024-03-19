@@ -5,6 +5,14 @@ import os
 import shutil
 from io import BytesIO
 
+
+st.set_page_config(
+    page_title='Descompactar Arquivos - GCINFRA',
+    layout='wide',
+    page_icon="https://media.licdn.com/dms/image/C4D0BAQHXylmAyGyD3A/company-logo_200_200/0/1630570245289?e=2147483647&v=beta&t=Dxas2us5gteu0P_9mdkQBwJEyg2aoc215Vrk2phu7Bs",
+    initial_sidebar_state='auto'
+)
+
 # This function checks and installs unrar if not present (For local runs, in Streamlit Cloud you need to ensure unrar is available)
 def check_and_install_unrar():
     if shutil.which("unrar") is None:
