@@ -42,7 +42,7 @@ def clean_extracted_files_directory(directory):
                 os.unlink(file_path)
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
-            st.success(f'Cleaned {filename}.')
+            st.success(f'Limpou {filename}.')
         except Exception as e:
             st.error(f'Failed to delete {filename}. Reason: {e}')
 
@@ -52,16 +52,16 @@ def compress_directory(path_to_dir, output_filename):
     return output_filename + '.zip'
 
 # Streamlit UI
-st.title('File Decompressor')
+st.title('Descompactador de Arquivos 📦')
 
-uploaded_files = st.file_uploader("Choose a RAR or ZIP file", accept_multiple_files=True, type=['rar', 'zip'])
+uploaded_files = st.file_uploader("Escolha um arquivo RAR ou ZIP", accept_multiple_files=True, type=['rar', 'zip'])
 
 extract_to_dir = 'extracted_files/'
 
 if not os.path.exists(extract_to_dir):
     os.makedirs(extract_to_dir)
 
-if st.button('Extract Files'):
+if st.button('Extrair Arquivos'):
     for uploaded_file in uploaded_files:
         # Save uploaded file to disk
         with open(os.path.join(extract_to_dir, uploaded_file.name), "wb") as f:
@@ -70,7 +70,7 @@ if st.button('Extract Files'):
         extract_file(os.path.join(extract_to_dir, uploaded_file.name), extract_to_dir)
 
 # Add a button to clean the extracted files directory
-if st.button('Clean Extracted Files'):
+if st.button('Limpar Cache'):
     clean_extracted_files_directory(extract_to_dir)
 
 # List extracted files and directories to download
