@@ -80,7 +80,7 @@ def extract_files(uploaded_file):
 
 st.title('File Decompressor')
 
-uploaded_file = st.file_uploader("Choose a ZIP or RAR file", type=['zip', 'rar'])
+uploaded_file = st.file_uploader("Escolha um arquilo ZIP ou RAR", type=['zip', 'rar'])
 if uploaded_file is not None:
     temp_dir, extracted_files = extract_files(uploaded_file)
     if extracted_files:
