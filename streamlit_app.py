@@ -38,6 +38,11 @@ def clean_extracted_files_directory(directory):
         except Exception as e:
             st.error(f'Failed to delete {filename}. Reason: {e}')
 
+# Function to compress directories before download
+def compress_directory(path_to_dir, output_filename):
+    shutil.make_archive(output_filename, 'zip', path_to_dir)
+    return output_filename + '.zip'
+
 # Streamlit UI
 st.title('File Decompressor')
 
@@ -60,15 +65,16 @@ if st.button('Extract Files'):
 if st.button('Clean Extracted Files'):
     clean_extracted_files_directory(extract_to_dir)
 
-# List extracted files to download
+# List extracted files and directories to download
 extracted_files = os.listdir(extract_to_dir)
 if extracted_files:
-    st.write('Extracted Files:')
+    st.write('Extracted Files and Folders:')
     for file_name in extracted_files:
         full_path = os.path.join(extract_to_dir, file_name)
-        if os.path.isfile(full_path):  # Ensure it's a file before offering it for download
+        if os.path.isfile(full_path):
             with open(full_path, "rb") as f:
                 st.download_button(label=f"Download {file_name}", data=f, file_name=file_name, mime="application/octet-stream")
-        else:
-            # Optionally notify about directories, or you can choose not to display them at all
-            st.write(f"{file_name} is a directory and cannot be downloaded directly.")
+        elif os.path.isdir(full_path):
+            zip_path = compress_directory(full_path, os.path.join("temp", file_name))
+            with open(zip_path, "rb") as f:
+                st.download_button(label=f"Download {file_name}.zip", data=f, file_name=os.path.basename(zip_path), mime="application/zip")
