@@ -1,45 +1,42 @@
-import os
 import streamlit as st
-import patoolib
-import shutil
+import rarfile
 
-# Function to save the uploaded file to a temporary directory
-def save_uploadedfile(uploadedfile):
-    with open(os.path.join("tempDir", uploadedfile.name), "wb") as f:
-        f.write(uploadedfile.getbuffer())
-    return st.success(f"Saved File: {uploadedfile.name} to tempDir")
+def decompress_rar(uploaded_file, output_dir="output"):
+  """Decompresses the uploaded RAR file and saves the extracted files to the specified directory.
 
-# Function to decompress a RAR file
-def decompress_rar(file_path, dest_path):
-    try:
-        patoolib.extract_archive(file_path, outdir=dest_path)
-        st.success("File decompressed successfully")
-    except Exception as e:
-        st.error(f"Error decompressing file: {e}")
+  Args:
+      uploaded_file (streamlit.uploadedfile.UploadedFile): The uploaded RAR file.
+      output_dir (str, optional): The directory to save the extracted files. Defaults to "output".
+  """
+  with rarfile.open(uploaded_file) as rar:
+    rar.extractall(output_dir)
+  st.success(f"Decompressed {uploaded_file.name} to {output_dir}")
 
-# Streamlit UI
-st.title("RAR File Decompressor")
-rar_file = st.file_uploader("Upload a RAR File", type=['rar'])
+def download_file(file_path):
+  """Creates a download link for a file at the specified path.
 
-if rar_file is not None:
-    # Save the uploaded RAR file
-    if not os.path.exists('tempDir'):
-        os.makedirs('tempDir')
-    save_uploadedfile(rar_file)
-    
-    # Decompress the RAR file
-    decompress_path = os.path.join('tempDir', 'decompressed')
-    os.makedirs(decompress_path, exist_ok=True)
-    decompress_rar(os.path.join('tempDir', rar_file.name), decompress_path)
-    
-    # List files and allow downloading
-    decompressed_files = os.listdir(decompress_path)
-    if decompressed_files:
-        st.write("Decompressed Files:")
-        for file in decompressed_files:
-            st.write(file)
-            with open(os.path.join(decompress_path, file), "rb") as f:
-                st.download_button(label=f"Download {file}", data=f, file_name=file, mime='application/octet-stream')
+  Args:
+      file_path (str): The path to the file to download.
+  """
+  with open(file_path, "rb") as f:
+    data = f.read()
+  st.download_button(label=os.path.basename(file_path), data=data, file_ext=os.path.splitext(file_path)[1])
 
-# Cleanup tempDir after use (optional, consider when/how you want to clean up)
-# shutil.rmtree('tempDir')
+st.title("RAR Decompression and Download App")
+uploaded_file = st.file_uploader("Upload RAR File", type="rar")
+
+if uploaded_file is not None:
+  # Decompress the uploaded RAR file
+  decompress_rar(uploaded_file)
+
+  # Get a list of extracted files
+  extracted_files = [os.path.join("output", f) for f in os.listdir("output")]
+
+  if extracted_files:
+    st.subheader("Extracted Files")
+    for file_path in extracted_files:
+      st.write(file_path)
+      download_file(file_path)
+  else:
+    st.warning("No files were extracted from the RAR.")
+
