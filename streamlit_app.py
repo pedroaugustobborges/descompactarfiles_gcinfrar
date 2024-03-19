@@ -1,10 +1,11 @@
 import streamlit as st
 from pyunpack import Archive
+import tempfile
 import os
 
-def decompress_rar(rar_file_path, destination_path):
+def decompress_rar(rar_file, destination_path):
     try:
-        Archive(rar_file_path).extractall(destination_path)
+        Archive(rar_file).extractall(destination_path)
         return True
     except Exception as e:
         st.error(f"Error occurred: {e}")
@@ -12,23 +13,18 @@ def decompress_rar(rar_file_path, destination_path):
 
 def main():
     st.title("RAR File Decompressor")
-    
+
     # Upload RAR file
-    st.sidebar.header("Upload RAR file")
-    uploaded_file = st.sidebar.file_uploader("Choose a RAR file", type=["rar"])
+    uploaded_file = st.file_uploader("Upload RAR file", type=["rar"])
 
     if uploaded_file:
-        # Decompress and display files
-        st.sidebar.header("Decompressed Files")
-        destination_path = st.sidebar.text_input("Enter destination folder path", "output")
-        if st.sidebar.button("Decompress"):
-            if decompress_rar(uploaded_file, destination_path):
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            if decompress_rar(uploaded_file, temp_dir):
                 st.success("File decompressed successfully!")
-                decompressed_files = os.listdir(destination_path)
+                decompressed_files = os.listdir(temp_dir)
                 for file in decompressed_files:
-                    st.sidebar.markdown(f"[{file}]({os.path.join(destination_path, file)})")
-            else:
-                st.error("Failed to decompress file!")
+                    st.markdown(f"[{file}]({os.path.join(temp_dir, file)})")
 
 if __name__ == "__main__":
     main()
