@@ -48,5 +48,10 @@ extracted_files = os.listdir(extract_to_dir)
 if extracted_files:
     st.write('Extracted Files:')
     for file_name in extracted_files:
-        with open(os.path.join(extract_to_dir, file_name), "rb") as f:
-            st.download_button(label=f"Download {file_name}", data=f, file_name=file_name, mime="application/octet-stream")
+        full_path = os.path.join(extract_to_dir, file_name)
+        if os.path.isfile(full_path):  # Ensure it's a file before offering it for download
+            with open(full_path, "rb") as f:
+                st.download_button(label=f"Download {file_name}", data=f, file_name=file_name, mime="application/octet-stream")
+        else:
+            # Optionally notify about directories, or you can choose not to display them at all
+            st.write(f"{file_name} is a directory and cannot be downloaded directly.")
