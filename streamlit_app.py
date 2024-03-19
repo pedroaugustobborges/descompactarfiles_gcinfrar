@@ -1,6 +1,7 @@
 import streamlit as st
 import patoolib
 import os
+import tempfile  # Add this line
 
 def decompress_rar(rar_file_path, destination_path):
     try:
@@ -18,7 +19,7 @@ def main():
 
     if uploaded_file:
         # Decompress the uploaded file
-        temp_dir = st.write(tempfile.mkdtemp())
+        temp_dir = tempfile.mkdtemp()  # Corrected line
         if decompress_rar(uploaded_file, temp_dir):
             st.success("File decompressed successfully!")
             decompressed_files = os.listdir(temp_dir)
